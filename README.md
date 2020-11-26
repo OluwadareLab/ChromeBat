@@ -16,7 +16,7 @@ If no parameter_file is passed the algorithm will use default parameters.
 All parameters must be specified in a text file like in the parameters.txt example.
 The parameters include
 + ouput_file: This is the name both of the outputted files will have.
-+ alpha: This is the conversion factor used.
++ alpha: This is the conversion factor used to convert the contact matrix to a distance matrix.
 + num_bats: How many bats the algorithm will simulate.
 + generations: How many iterations the algorithm will perform.
 + upper_bound: The upper bound of the search space.
@@ -40,5 +40,5 @@ These files are
 The approach is based on the bat algorithm "A New Metaheuristic Bat-Inspired Algorithm, in: Nature Inspired Cooperative Strategies for Optimization".
 Additionally, I used https://github.com/buma/BatAlgorithm as reference and starting point.
 The algorithm features numerous hyperparameters whose effects I describe in the parameters.txt.
-In general, generations and num_bats are the most important parameters.
-I found the best results with 10,000 generations and 30 bats, which took around 5 minutes on my computer.
+In general, alpha,generations and num_bats are the most important parameters.
+I found the best results with alpha=0.5, 10,000 generations, and 30 bats, which took around 5 minutes on my computer.
