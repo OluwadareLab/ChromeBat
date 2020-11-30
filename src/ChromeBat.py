@@ -1,4 +1,4 @@
-#GenomeBat
+#ChromeBat
 #Written By Brandon Collins for CS5435
 #11/24/2020
 
