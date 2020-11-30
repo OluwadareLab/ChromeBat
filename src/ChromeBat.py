@@ -17,15 +17,18 @@ numeric_re=re.compile('\d+(\.\d+)?')
 #accepts a canidate solution(xyz coordinates of all loci)
 #returns the distance matrix between all of said loci
 def sol2dist(sol):
-	xyz_col=np.array(np.split(sol,len(sol)/3))
-	sum_matrix=np.zeros((len(xyz_col),len(xyz_col)))
-	for i in [1,2,3]:
-		b=np.tile(xyz_col[:,i-1:i].T,(len(xyz_col),1))
-		c=np.tile(xyz_col[:,i-1:i],(1,len(xyz_col)))
-		d=b-c
-		sum_matrix=sum_matrix+(d*d)
-	sum_matrix=sum_matrix **0.5
-	return sum_matrix
+	if len(np.shape(sol))==1:
+		xyz_col=np.array(np.split(sol,len(sol)/3))
+	else:
+		xyz_col=sol
+	
+	matrix=np.zeros((len(xyz_col),len(xyz_col)))
+	for i in range(len(xyz_col)):
+		x_i,y_i,z_i=xyz_col[i]
+		for j in range(len(xyz_col)):
+			x_j,y_j,z_j=xyz_col[j]
+			matrix[i,j]=((x_i-x_j)**2+(y_i-y_j)**2+(z_i-z_j)**2)**.5
+	return matrix
 
 #accepts contact matrix and scaling parameter alpha
 #returns the distance matrix
@@ -206,9 +209,15 @@ def processInput(input_fname,parameter_fname=None):
 def formatMetrics(sol,key):
 	distance_matrix=sol2dist(sol)
 	key=np.nan_to_num(key,copy=True,posinf=0)
-	pearson=scipy.stats.pearsonr(distance_matrix.flatten(),key.flatten())[0]
-	spearman=scipy.stats.spearmanr(distance_matrix.flatten(),key.flatten()).correlation
-	rmse=sklearn.metrics.mean_squared_error(key.flatten(),distance_matrix.flatten())**0.5
+	distance_list=[]
+	key_list=[]
+	for i in range(1,len(distance_matrix)):
+		for j in range(i-1):
+			distance_list.append(distance_matrix[i,j])
+			key_list.append(key[i,j])
+	pearson=scipy.stats.pearsonr(distance_list,key_list)[0]
+	spearman=scipy.stats.spearmanr(distance_list,key_list).correlation
+	rmse=sklearn.metrics.mean_squared_error(key_list,distance_list)**0.5
 	metrics=f"AVG RMSE: {rmse}\nAVG Spearman correlation Dist vs. Reconstructed Dist: {spearman}\nAVG Pearson correlation Dist vs. Reconstructed Dist: {pearson}"
 	return metrics
 #this writes the log file
