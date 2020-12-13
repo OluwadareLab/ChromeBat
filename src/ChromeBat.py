@@ -212,7 +212,9 @@ def formatMetrics(sol,key):
 	distance_list=[]
 	key_list=[]
 	for i in range(1,len(distance_matrix)):
-		for j in range(i-1):
+		for j in range(i):
+			if key[i,j]==0:
+				continue
 			distance_list.append(distance_matrix[i,j])
 			key_list.append(key[i,j])
 	pearson=scipy.stats.pearsonr(distance_list,key_list)[0]
