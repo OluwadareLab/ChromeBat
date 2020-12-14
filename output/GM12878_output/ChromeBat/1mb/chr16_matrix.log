@@ -1,5 +1,5 @@
-Input file: ../data/GM12878/KR_1mb/chr16_matrix.txt
-Convert factor: 0.5
-AVG RMSE: 0.03597250806364462
-AVG Spearman correlation Dist vs. Reconstructed Dist: -0.009663106345777668
-AVG Pearson correlation Dist vs. Reconstructed Dist: -0.016775883071405137
+Input file: chr16_matrix.txt
+Convert factor: 0.2
+AVG RMSE: 0.061396724089505965
+AVG Spearman correlation Dist vs. Reconstructed Dist: 0.6093533836276448
+AVG Pearson correlation Dist vs. Reconstructed Dist: 0.6076832821246814
