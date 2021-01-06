@@ -5,6 +5,12 @@ output_file=bat
 
 ### Algorithm Parameters ###
 
+#which version of optimization to use
+#1 is default and is the vectorized implementation
+#2 is the iterative version(slow!)
+#PSO uses vectorized vanilla particle swarm from wikipedia
+fly_ver=1
+
 #alpha is the conversion factor used to convert the contact matrix into a Distance matrix
 #the formula for distance d based on contact rate c is d(c)=1/(c^alpha)
 alpha=0.5
@@ -15,27 +21,27 @@ num_bats=30
 
 #generations is how many iterations of the algorithm will run
 #also impacts runtime linearly
-generations=10000
+generations=3000
 
 ### Bat Behavioral Variables ###
 
 #Bounds determine the boundaries of the search space
 #I.e. if upper_bound=1 and lower_bound=0 the bats will find a solution within the unit cube
-upper_bound=4
+upper_bound=10
 lower_bound=0
 
 #a bats frequency determines how aggressively it optimizes
 #A bat with high frequency will fly toward the best known solution at high speed
 min_freq=0
-max_freq=2
+max_freq=0.1
 
 #A bats volume determines how willing it is to accept a new solution
 #A value of 0 means a bat will always never accept new solution and 1 means it always will
-volume=0.5
+volume=0.9
 
 #A bat's pulse rate determines how often it stops exploring and teleports to the current best known solution
 #a pulse rate of 1 means it always appears at the best known solution
 #a pulse rate of 0 means it never teleports 
-pulse=0.5
+pulse=0.9
 
 
