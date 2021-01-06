@@ -202,11 +202,11 @@ def outputPdb(input_sol,outfile=None):
 	out_string="pdb carefully constructed by Brandon\n"
 	for i in range(len(sol)):
 		x,y,z=sol[i]
-		out_string+="ATOM  "+pad(i+1,5,True)+" " \
-			+"CA MET "+pad("A"+str(i+1),5) \
+		out_string+="ATOM  "+pad(i+1,5,True)+"   " \
+			+"CA MET "+pad("B"+str(i+1),6)+"   " \
 			+pad(format(x,".3f"),8,True)+pad(format(y,".3f"),8,True) \
-			+pad(format(z,".3f"),8,True) \
-			+" 0.20 10.00\n"
+			+pad(format(z,".3f"),8,True)+"  " \
+			+"0.20 10.00\n"
 	connect_string="\n".join([f"CONECT"+pad(i+1,5,True)+pad(i+2,5,True) for i in range(len(sol)-1)])
 	out_string+=connect_string+"\n"+"END\n"
 
