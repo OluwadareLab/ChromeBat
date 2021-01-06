@@ -280,12 +280,14 @@ def formatMetrics(sol,key):
 	return metrics
 #this writes the log file
 #accepts the metric string from formatMetrics,input file name, and an output file name
-def outputLog(metrics,alpha,input_fname,out_fname=None,bat_params=None):
+def outputLog(metrics,alpha,input_fname,out_fname=None,bat_params=None,runtime=None):
 	if out_fname is None:
 		out_fname="bat.log"
 	else:
 		out_fname+=".log"
 	outstring=f"Input file: {input_fname}\nConvert factor: {alpha}\n"+metrics
+	if runtime is not None:
+		outstring+=f"\nRuntime: {runtime:.2f} seconds"
 	if bat_params is not None:
 		outstring+=f"\n"+"\n".join([f"{key}={value}" for key,value in bat_params.items()])
 	f=open(out_fname,"w")
@@ -321,7 +323,7 @@ if __name__=="__main__":
 			print(f"Execution Time: {end_time-start_time:.2f} seconds using fly_ver={fly_ver}")
 
 			outfile_suffix="a"+(str(alpha)).strip(".")
-			outputLog(metrics,alpha,args.contact_matrix,outfile+outfile_suffix,bat_params=param_dict)
+			outputLog(metrics,alpha,args.contact_matrix,outfile+outfile_suffix,bat_params=param_dict,runtime=end_time-start_time)
 			outputPdb(best_sol,outfile+outfile_suffix)
 	else:
 		start_time=time.time()
@@ -338,7 +340,7 @@ if __name__=="__main__":
 		end_time=time.time()
 		print(metrics)
 		print(f"Execution Time: {end_time-start_time:.2f} seconds using fly_ver={fly_ver}")
-		outputLog(metrics,alpha,args.contact_matrix,outfile,bat_params=param_dict)
+		outputLog(metrics,alpha,args.contact_matrix,outfile,bat_params=param_dict,runtime=end_time-start_time)
 		outputPdb(best_sol,outfile)
 
 
