@@ -176,6 +176,16 @@ class Bat:
 			self.evalBats()
 		return self.best_sol
 
+#accepts symmetric square matrix a
+#returns a with zero adjancent bins replaced with an average adjancency value
+def adjancenyPreprocess(a):
+	a=a.copy() #method is nondestructive
+	adj_diagonal=np.diagonal(a,1).copy() #this is the diagonal of the matrix off by 1
+	mean_adj=sum(adj_diagonal)/len(adj_diagonal[adj_diagonal != 0]) #mean of all values on off diagonal not including 0s
+	adj_diagonal[adj_diagonal == 0] = mean_adj #this is corrected off diagonal
+	a.flat[1::len(a)+1]=adj_diagonal #this fixes the diagonal to the right of the main diagonal
+	a.flat[len(a)::len(a)+1]==adj_diagonal #this fixes the diagonal to theleft of the main diagonal
+	return a
 
 #used for making the pdb files
 #pads the input string so it is size long
@@ -297,6 +307,7 @@ if __name__=="__main__":
 		for alpha in [0.1,0.3,0.5,0.7,0.9,1.0]:
 			start_time=time.time()
 			distance=contactToDistance(contact,alpha)
+			distance=adjancenyPreprocess(distance)
 			bats=Bat(distance,**param_dict)
 			if fly_ver=="2":
 				best_sol=bats.fly2()
@@ -315,6 +326,7 @@ if __name__=="__main__":
 	else:
 		start_time=time.time()
 		distance=contactToDistance(contact,alpha)
+		distance=adjancenyPreprocess(distance)
 		bats=Bat(distance,**param_dict)
 		if fly_ver=="2":
 			best_sol=bats.fly2()
