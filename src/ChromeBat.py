@@ -51,6 +51,7 @@ def sol2distVec(sol):
 def contactToDistance(contact,alpha=.5):
 	with np.errstate(divide="ignore"):
 		matrix=1/(contact**alpha)
+		np.fill_diagonal(matrix,0)
 	return matrix
 
 
@@ -264,12 +265,12 @@ def processInput(input_fname,parameter_fname=None):
 #returns a string with PCC,SCC,RMSE
 def formatMetrics(sol,key):
 	distance_matrix=sol2dist(sol)
-	key=np.nan_to_num(key,copy=True,posinf=0)
+	# key=np.nan_to_num(key,copy=True,posinf=0)
 	distance_list=[]
 	key_list=[]
 	for i in range(1,len(distance_matrix)):
-		for j in range(i):
-			if key[i,j]==0:
+		for j in range(i+1):
+			if key[i,j]==np.inf:
 				continue
 			distance_list.append(distance_matrix[i,j])
 			key_list.append(key[i,j])
@@ -309,8 +310,8 @@ if __name__=="__main__":
 		for alpha in [0.1,0.3,0.5,0.7,0.9,1.0]:
 			start_time=time.time()
 			distance=contactToDistance(contact,alpha)
-			distance=adjancenyPreprocess(distance)
-			bats=Bat(distance,**param_dict)
+			distance_prepro=adjancenyPreprocess(distance)
+			bats=Bat(distance_prepro,**param_dict)
 			if fly_ver=="2":
 				best_sol=bats.fly2()
 			elif fly_ver=="PSO":
@@ -328,8 +329,8 @@ if __name__=="__main__":
 	else:
 		start_time=time.time()
 		distance=contactToDistance(contact,alpha)
-		distance=adjancenyPreprocess(distance)
-		bats=Bat(distance,**param_dict)
+		distance_prepro=adjancenyPreprocess(distance)
+		bats=Bat(distance_prepro,**param_dict)
 		if fly_ver=="2":
 			best_sol=bats.fly2()
 		elif fly_ver=="PSO":
