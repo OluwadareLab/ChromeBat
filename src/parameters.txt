@@ -17,11 +17,11 @@ alpha=0.5
 
 #num_bats is how many bats the algo should simulate
 #it appears to impact runtime linearly, that is doubling the amount of bats will double the runtime
-num_bats=30
+num_bats=10
 
 #generations is how many iterations of the algorithm will run
 #also impacts runtime linearly
-generations=3000
+generations=10000
 
 ### Bat Behavioral Variables ###
 
@@ -43,5 +43,7 @@ volume=0.9
 #a pulse rate of 1 means it always appears at the best known solution
 #a pulse rate of 0 means it never teleports 
 pulse=0.9
+
+perturbation=0.0075
 
 

@@ -51,7 +51,7 @@ def sol2distVec(sol):
 def contactToDistance(contact,alpha=.5):
 	with np.errstate(divide="ignore"):
 		matrix=1/(contact**alpha)
-		np.fill_diagonal(matrix,0)
+		#np.fill_diagonal(matrix,0)
 	return matrix
 
 
@@ -60,8 +60,8 @@ def contactToDistance(contact,alpha=.5):
 #it is based on the paper and https://github.com/buma/BatAlgorithm
 #call it by using fly()
 class Bat:
-	params=set(["matrix","fly_ver","alpha","func","num_bats","upper_bound","lower_bound","min_freq","max_freq","volume","generations","pulse"])
-	def __init__(self,matrix,num_bats=20,lower_bound=0,upper_bound=3,min_freq=0,max_freq=2,volume=0.5,generations=100,pulse=0.5):
+	params=set(["matrix","fly_ver","alpha","func","num_bats","upper_bound","lower_bound","min_freq","max_freq","volume","generations","pulse","perturbation"])
+	def __init__(self,matrix,num_bats=20,lower_bound=0,upper_bound=3,min_freq=0,max_freq=2,volume=0.5,generations=100,pulse=0.5,perturbation=0.01):
 		self.lower=lower_bound
 		self.upper=upper_bound
 		self.freq_min=min_freq
@@ -69,6 +69,7 @@ class Bat:
 		self.D=len(matrix)*3
 		self.matrix=matrix
 		self.generations=int(generations)
+		self.perturbation=perturbation
 		# self.loss=func
 		self.loudness=volume
 		self.num_bats=int(num_bats)
@@ -120,7 +121,7 @@ class Bat:
 			#this could become individuals bats pulse rate
 			self.pulse_array=(np.array([self.pulse]*self.num_bats)>=np.random.rand(self.num_bats)).astype(int)
 			self.flip_pulse_array=(self.pulse_array+1)%2
-			self.temp_sols=(self.temp_sols*self.flip_pulse_array[:,np.newaxis])+(np.tile(self.best_sol,(self.num_bats,1))*self.pulse_array[:,np.newaxis]+0.01*np.random.normal(0,1,(self.num_bats,self.D)))
+			self.temp_sols=(self.temp_sols*self.flip_pulse_array[:,np.newaxis])+(np.tile(self.best_sol,(self.num_bats,1))*self.pulse_array[:,np.newaxis]+self.perturbation*np.random.normal(0,1,(self.num_bats,self.D)))
 			self.temp_sols=np.clip(self.temp_sols,self.lower,self.upper)
 
 			self.temp_fitness=np.apply_along_axis(self.loss,1,self.temp_sols)
@@ -268,7 +269,7 @@ def formatMetrics(sol,key):
 	# key=np.nan_to_num(key,copy=True,posinf=0)
 	distance_list=[]
 	key_list=[]
-	for i in range(1,len(distance_matrix)):
+	for i in range(len(distance_matrix)):
 		for j in range(i+1):
 			if key[i,j]==np.inf:
 				continue
@@ -318,6 +319,7 @@ if __name__=="__main__":
 				best_sol=bats.PSO()
 			else:
 				best_sol=bats.fly()
+			best_sol*=10 #resizing solotion as it is quite small
 			metrics=formatMetrics(best_sol,distance)
 			end_time=time.time()
 			print(f"alpha={alpha}\n"+metrics)
@@ -337,6 +339,7 @@ if __name__=="__main__":
 			best_sol=bats.PSO()
 		else:
 			best_sol=bats.fly()
+		best_sol*=10
 		metrics=formatMetrics(best_sol,distance)
 		end_time=time.time()
 		print(metrics)
