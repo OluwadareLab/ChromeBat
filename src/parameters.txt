@@ -1,18 +1,20 @@
-######### Parameters for GenomeBat algorithm ##################
+######### Parameters for ChromeBat algorithm ##################
 
 #A .log and .pdb will be produced with this name
 output_file=bat
 
-### Algorithm Parameters ###
+#This is how many structures the algorithm should produce in addition to structures produced in an alpha search
+#only the best structure (in terms of Spearman Correlation) is reported
+#1 is the default value
+structs=2
 
-#which version of optimization to use
-#1 is default and is the vectorized implementation
-#2 is the iterative version(slow!)
-#PSO uses vectorized vanilla particle swarm from wikipedia
+
+### Algorithm Parameters ###
 
 
 #alpha is the conversion factor used to convert the contact matrix into a Distance matrix
 #the formula for distance d based on contact rate c is d(c)=1/(c^alpha)
+#If alpha is not found the ChromeBat will perform a search across alphas in [0,1]
 #alpha=0.5
 
 #num_bats is how many bats the algo should simulate
@@ -44,8 +46,10 @@ volume=0.9
 #a pulse rate of 0 means it never teleports 
 pulse=0.9
 
+#Perturbation determines how large of a random walk a bat performs after pulsing
+#this is a constant factor multiplied by a Gaussian distribution with mean 0 and std deviation 1 in all dimensions
 perturbation=0.0075
 
-structs=2
+
 
 
