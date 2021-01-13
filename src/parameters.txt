@@ -9,11 +9,11 @@ output_file=bat
 #1 is default and is the vectorized implementation
 #2 is the iterative version(slow!)
 #PSO uses vectorized vanilla particle swarm from wikipedia
-fly_ver=1
+
 
 #alpha is the conversion factor used to convert the contact matrix into a Distance matrix
 #the formula for distance d based on contact rate c is d(c)=1/(c^alpha)
-alpha=0.5
+#alpha=0.5
 
 #num_bats is how many bats the algo should simulate
 #it appears to impact runtime linearly, that is doubling the amount of bats will double the runtime
@@ -45,5 +45,7 @@ volume=0.9
 pulse=0.9
 
 perturbation=0.0075
+
+structs=2
 
 

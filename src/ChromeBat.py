@@ -10,6 +10,9 @@ import re
 import scipy.stats
 import sklearn.metrics
 import time
+from multiprocessing import Pool
+from multiprocessing import cpu_count
+from itertools import repeat
 
 #regular expressions
 comment_re=re.compile("#.*")
@@ -60,7 +63,7 @@ def contactToDistance(contact,alpha=.5):
 #it is based on the paper and https://github.com/buma/BatAlgorithm
 #call it by using fly()
 class Bat:
-	params=set(["matrix","fly_ver","alpha","func","num_bats","upper_bound","lower_bound","min_freq","max_freq","volume","generations","pulse","perturbation"])
+	params=set(["matrix","structs","alpha","func","num_bats","upper_bound","lower_bound","min_freq","max_freq","volume","generations","pulse","perturbation"])
 	def __init__(self,matrix,num_bats=20,lower_bound=0,upper_bound=3,min_freq=0,max_freq=2,volume=0.5,generations=100,pulse=0.5,perturbation=0.01):
 		self.lower=lower_bound
 		self.upper=upper_bound
@@ -186,7 +189,7 @@ def adjancenyPreprocess(a):
 	mean_adj=sum(adj_diagonal)/len(adj_diagonal[adj_diagonal != 0]) #mean of all values on off diagonal not including 0s
 	adj_diagonal[adj_diagonal == 0] = mean_adj #this is corrected off diagonal
 	a.flat[1::len(a)+1]=adj_diagonal #this fixes the diagonal to the right of the main diagonal
-	a.flat[len(a)::len(a)+1]==adj_diagonal #this fixes the diagonal to theleft of the main diagonal
+	a.flat[len(a)::len(a)+1]==adj_diagonal #this fixes the diagonal to the left of the main diagonal
 	return a
 
 #used for making the pdb files
@@ -233,7 +236,7 @@ def processInput(input_fname,parameter_fname=None):
 	fly_ver="1"
 	outfile=None
 	if parameter_fname is None:
-		return (contact,alpha,dict(),outfile,fly_ver)
+		return (contact,alpha,dict(),outfile,structs)
 	pfile=open(parameter_fname,"r")
 	plines=pfile.readlines()
 	param_dict=dict()
@@ -250,8 +253,8 @@ def processInput(input_fname,parameter_fname=None):
 			continue
 		elif param not in Bat.params:
 			raise ValueError(f"{param} is not a valid parameter")
-		elif param=="fly_ver":
-			fly_ver=arg
+		elif param=="structs":
+			structs=int(arg)
 		elif numeric_re.match(arg) is None:
 			raise ValueError(f"{arg} must be numeric")
 		elif param=="alpha":
@@ -260,11 +263,11 @@ def processInput(input_fname,parameter_fname=None):
 			param_dict[param]=float(arg)
 
 	# distance_matrix=contactToDistance(contact,alpha)
-	return (contact,alpha,param_dict,outfile,fly_ver)
+	return (contact,alpha,param_dict,outfile,structs)
 
 #accepts the proposed solution and the target distance matrix
 #returns a string with PCC,SCC,RMSE
-def formatMetrics(sol,key):
+def formatMetrics(sol,key,string=True):
 	distance_matrix=sol2dist(sol)
 	# key=np.nan_to_num(key,copy=True,posinf=0)
 	distance_list=[]
@@ -278,11 +281,14 @@ def formatMetrics(sol,key):
 	pearson=scipy.stats.pearsonr(distance_list,key_list)[0]
 	spearman=scipy.stats.spearmanr(distance_list,key_list).correlation
 	rmse=sklearn.metrics.mean_squared_error(key_list,distance_list)**0.5
-	metrics=f"AVG RMSE: {rmse}\nAVG Spearman correlation Dist vs. Reconstructed Dist: {spearman}\nAVG Pearson correlation Dist vs. Reconstructed Dist: {pearson}"
+	if string:
+		metrics=f"AVG RMSE: {rmse}\nAVG Spearman correlation Dist vs. Reconstructed Dist: {spearman}\nAVG Pearson correlation Dist vs. Reconstructed Dist: {pearson}"
+	else:
+		metrics=(rmse,spearman,pearson)
 	return metrics
 #this writes the log file
 #accepts the metric string from formatMetrics,input file name, and an output file name
-def outputLog(metrics,alpha,input_fname,out_fname=None,bat_params=None,runtime=None):
+def outputLog(metrics,alpha,input_fname,out_fname=None,bat_params=None,runtime=None,searched_alphas=None,structs=None):
 	if out_fname is None:
 		out_fname="bat.log"
 	else:
@@ -290,62 +296,118 @@ def outputLog(metrics,alpha,input_fname,out_fname=None,bat_params=None,runtime=N
 	outstring=f"Input file: {input_fname}\nConvert factor: {alpha}\n"+metrics
 	if runtime is not None:
 		outstring+=f"\nRuntime: {runtime:.2f} seconds"
+	if searched_alphas is not None:
+		outstring+=f"\nPerformed Alpha Search: {searched_alphas}"
+	if structs is not None:
+		outstring+=f"\nGenerated Stuctures Count: {structs}"
 	if bat_params is not None:
 		outstring+=f"\n"+"\n".join([f"{key}={value}" for key,value in bat_params.items()])
 	f=open(out_fname,"w")
 	f.write(outstring)
 	f.close()
-
+def optimize(distance,params):
+	bats=Bat(distance,**params)
+	return bats.fly()
 
 
 #driver code
 if __name__=="__main__":
-	
+	start_time=time.time()
 	parser=argparse.ArgumentParser()
 	parser.add_argument("contact_matrix",help="File name of a square contact matrix")
 	parser.add_argument("params",nargs="?",default=None,help="File name of the parameters file")
 	# parser.add_argument("parameters",default="parameters.txt",)	
 	args=parser.parse_args()
-	contact,alpha,param_dict,outfile,fly_ver=processInput(args.contact_matrix,args.params)
-	if alpha is None:
-		for alpha in [0.1,0.3,0.5,0.7,0.9,1.0]:
-			start_time=time.time()
-			distance=contactToDistance(contact,alpha)
-			distance_prepro=adjancenyPreprocess(distance)
-			bats=Bat(distance_prepro,**param_dict)
-			if fly_ver=="2":
-				best_sol=bats.fly2()
-			elif fly_ver=="PSO":
-				best_sol=bats.PSO()
-			else:
-				best_sol=bats.fly()
-			best_sol*=10 #resizing solotion as it is quite small
-			metrics=formatMetrics(best_sol,distance)
-			end_time=time.time()
-			print(f"alpha={alpha}\n"+metrics)
-			print(f"Execution Time: {end_time-start_time:.2f} seconds using fly_ver={fly_ver}")
+	contact,alpha,param_dict,outfile,structs=processInput(args.contact_matrix,args.params)
 
-			outfile_suffix="a"+(str(alpha)).strip(".")
-			outputLog(metrics,alpha,args.contact_matrix,outfile+outfile_suffix,bat_params=param_dict,runtime=end_time-start_time)
-			outputPdb(best_sol,outfile+outfile_suffix)
-	else:
-		start_time=time.time()
-		distance=contactToDistance(contact,alpha)
-		distance_prepro=adjancenyPreprocess(distance)
-		bats=Bat(distance_prepro,**param_dict)
-		if fly_ver=="2":
-			best_sol=bats.fly2()
-		elif fly_ver=="PSO":
-			best_sol=bats.PSO()
-		else:
-			best_sol=bats.fly()
-		best_sol*=10
-		metrics=formatMetrics(best_sol,distance)
-		end_time=time.time()
-		print(metrics)
-		print(f"Execution Time: {end_time-start_time:.2f} seconds using fly_ver={fly_ver}")
-		outputLog(metrics,alpha,args.contact_matrix,outfile,bat_params=param_dict,runtime=end_time-start_time)
-		outputPdb(best_sol,outfile)
+	print("Running ChromeBat")
+
+	PROC_COUNT=cpu_count()
+	searched_alphas=False
+	if alpha is None:
+		print("Performing Alpha Search...")
+		searched_alphas=True
+		alphas=[0.1,0.3,0.5,0.7,0.9,1]
+		distance_m_list=[adjancenyPreprocess(contactToDistance(contact,a)) for a in alphas]
+		pool = Pool(processes=PROC_COUNT)
+		swarms=pool.starmap(optimize, zip(distance_m_list,repeat(param_dict)))
+		pool.close()
+		pool.join()
+		spearmans=[formatMetrics(sol,distance_m_list[i],string=False)[1] for i,sol in enumerate(swarms)]
+		best_index=np.argmax(spearmans)
+		alpha=alphas[best_index]
+		end_alphas_time=time.time()
+		pad_len=len(str(max(alphas,key=lambda x:len(str(x)))))+7
+		alpha_scc_string="\n".join([pad(alphas[i],pad_len,left=False)+str(spearmans[i]) for i in range(len(spearmans))])
+		print("Search Results:\n"+pad("alpha",pad_len)+"SCC\n"+alpha_scc_string)
+		print(f"Best Alpha={alpha}, found in {end_alphas_time-start_time:.2f} seconds")
+
+
+	print(f"Generating {structs} structures using Alpha={alpha}")
+	distance_m=contactToDistance(contact,alpha)
+	distance_m_prepro=adjancenyPreprocess(distance_m)
+	pool = Pool(processes=PROC_COUNT)
+	swarms=pool.starmap(optimize, zip(repeat(distance_m_prepro,structs),repeat(param_dict)))
+	pool.close()
+	pool.join()
+	spearmans=[formatMetrics(sol,distance_m,string=False)[1] for sol in swarms]
+	best_index=np.argmax(spearmans)
+	
+	best_sol=swarms[best_index]*10
+	metrics=formatMetrics(best_sol,distance_m)
+
+	final_end_time=time.time()
+	print(f"Done in {final_end_time-start_time:.2f} seconds total")
+	print("Writing best structure....")
+
+	print(metrics)
+	
+
+	
+	outputLog(metrics,alpha,args.contact_matrix,outfile,bat_params=param_dict,runtime=final_end_time-start_time,searched_alphas=searched_alphas,structs=structs)
+	outputPdb(best_sol,outfile)
+	print(f"{outfile}.log and {outfile}.pdb written!")
+
+	
+	# if alpha is None:
+	# 	for alpha in [0.1,0.3,0.5,0.7,0.9,1.0]:
+	# 		start_time=time.time()
+	# 		distance=contactToDistance(contact,alpha)
+	# 		distance_prepro=adjancenyPreprocess(distance)
+	# 		bats=Bat(distance_prepro,**param_dict)
+	# 		if fly_ver=="2":
+	# 			best_sol=bats.fly2()
+	# 		elif fly_ver=="PSO":
+	# 			best_sol=bats.PSO()
+	# 		else:
+	# 			best_sol=bats.fly()
+	# 		best_sol*=10 #resizing solotion as it is quite small
+	# 		metrics=formatMetrics(best_sol,distance)
+	# 		end_time=time.time()
+	# 		print(f"alpha={alpha}\n"+metrics)
+	# 		print(f"Execution Time: {end_time-start_time:.2f} seconds using fly_ver={fly_ver}")
+
+	# 		outfile_suffix="a"+(str(alpha)).strip(".")
+	# 		outputLog(metrics,alpha,args.contact_matrix,outfile+outfile_suffix,bat_params=param_dict,runtime=end_time-start_time)
+	# 		outputPdb(best_sol,outfile+outfile_suffix)
+	# else:
+	# 	start_time=time.time()
+	# 	distance=contactToDistance(contact,alpha)
+	# 	distance_prepro=adjancenyPreprocess(distance)
+	# 	bats=Bat(distance_prepro,**param_dict)
+	# 	if fly_ver=="2":
+	# 		best_sol=bats.fly2()
+	# 	elif fly_ver=="PSO":
+	# 		best_sol=bats.PSO()
+	# 	else:
+	# 		best_sol=bats.fly()
+	# 	best_sol*=10
+	# 	metrics=formatMetrics(best_sol,distance)
+	# 	end_time=time.time()
+	# 	print(metrics)
+	# 	print(f"Execution Time: {end_time-start_time:.2f} seconds using fly_ver={fly_ver}")
+	# 	outputLog(metrics,alpha,args.contact_matrix,outfile,bat_params=param_dict,runtime=end_time-start_time)
+	# 	outputPdb(best_sol,outfile)
 
 
 
