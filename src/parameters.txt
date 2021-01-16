@@ -4,7 +4,6 @@
 output_file=bat
 
 #This is how many structures the algorithm should produce in addition to structures produced in an alpha search
-#only the best structure (in terms of Spearman Correlation) is reported
 #1 is the default value
 structs=2
 
@@ -18,7 +17,7 @@ structs=2
 #alpha=0.5
 
 #num_bats is how many bats the algo should simulate
-#it appears to impact runtime linearly, that is doubling the amount of bats will double the runtime
+#it impacts runtime linearly, that is doubling the amount of bats will double the runtime
 num_bats=10
 
 #generations is how many iterations of the algorithm will run
@@ -26,11 +25,6 @@ num_bats=10
 generations=10000
 
 ### Bat Behavioral Variables ###
-
-#Bounds determine the boundaries of the search space
-#I.e. if upper_bound=1 and lower_bound=0 the bats will find a solution within the unit cube
-upper_bound=10
-lower_bound=0
 
 #a bats frequency determines how aggressively it optimizes
 #A bat with high frequency will fly toward the best known solution at high speed

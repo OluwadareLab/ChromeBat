@@ -19,26 +19,21 @@ The parameters include
 + alpha: This is the conversion factor used to convert the contact matrix to a distance matrix. If no alpha value is found a search across alphas in [0,1] will be performed
 + num_bats: How many bats the algorithm will simulate.
 + generations: How many iterations the algorithm will perform.
-+ upper_bound: The upper bound of the search space.
-+ lower_bound: The lower bound of the search space.
 + min_freq: The minimuim frequency that a bat can have. Low frequency means a bat will explore more then exploit.
 + max_freq: The maximum frequency a bat will be simulated with. Bats with high frequency expoit more then explore.
 + volume: A bat's volume determines how willing it is to accept new solutions. A loud bat will accept solutions with high probability.
 + pulse: When a bat pulses it teleports to the current best known solution. High pulse means it teleports with high probability. 
 + perturbation: This determines the size of the random walk a bat takes after pulsing
-+ structs: This is how many structures in addition to the alpha search structures the algorithm should generate. Only the best structure will be reported.
++ structs: This is how many structures in addition to the alpha search structures the algorithm should generate. If an alpha search is performed only the structures generated with the optimal alpha will be written to files.
 
 
 # Output
-Chromebat.py will produce two files whose names are specified by the output_file parameter in the parameter file.
+Chromebat.py will produce two files per structure generated with desired alpha whose names are specified by the output_file parameter in the parameter file.
 
 These files are
-  + output_file.pdb : contains the model that may be visualized using PyMol
-  + output_file.log : contains the input file name, Spearman's and Pearson's Correlation Coeffiecents and the Roor Mean Squared Error
+  + output_fileX.pdb : contains the model that may be visualized using PyMol
+  + output_fileX.log : contains the input file name, Spearman's and Pearson's Correlation Coeffiecents and the Root Mean Squared Error
 
-# Comments
-The approach is based on the bat algorithm "A New Metaheuristic Bat-Inspired Algorithm, in: Nature Inspired Cooperative Strategies for Optimization".
-Additionally, I used https://github.com/buma/BatAlgorithm as reference and starting point.
-The algorithm features numerous hyperparameters whose effects I describe in the parameters.txt.
-In general, alpha,generations and num_bats are the most important parameters.
-I found the best results with alpha=0.5, 10,000 generations, and 30 bats, which took around 5 minutes on my computer.
+  Where X indicates the a structures number. For example if structs=2 and an alpha search is performed 3 structures with the optimal alpha will be generated, and 3 pairs of .pdb,.log files will be generated.
+
+

@@ -50,7 +50,7 @@ def contactToDistance(contact,alpha=.5):
 #parameters are described on github
 class Bat:
 	params=set(["matrix","structs","alpha","func","num_bats","upper_bound","lower_bound","min_freq","max_freq","volume","generations","pulse","perturbation"])
-	def __init__(self,matrix,num_bats=20,lower_bound=0,upper_bound=3,min_freq=0,max_freq=2,volume=0.5,generations=100,pulse=0.5,perturbation=0.01):
+	def __init__(self,matrix,num_bats=20,lower_bound=0,upper_bound=10,min_freq=0,max_freq=2,volume=0.5,generations=100,pulse=0.5,perturbation=0.01):
 		self.lower=lower_bound 
 		self.upper=upper_bound 
 		self.freq_min=min_freq
@@ -307,25 +307,32 @@ if __name__=="__main__":
 	if searched_alphas: #reuse structure generated in the search portion
 		swarms.append(searched_sol)
 
+	if len(swarms)==0:
+		raise ValueError("No structures generated, if structs=0 an alpha search must be performed to generate a structure")
+
 	spearmans=[formatMetrics(sol,distance_m,string=False)[1] for sol in swarms]
-	best_index=np.argmax(spearmans)
-	
-	best_sol=swarms[best_index]*10 # output structures tended to be very small so now they are not
-	metrics=formatMetrics(best_sol,distance_m)
+	sorted_index=np.argsort(-np.array(spearmans)) #the negative makes it sort greatest to least
 
 	final_end_time=time.time()
+
+	print(f"Writing {structs} structures...")
+	swarms=np.array(swarms)#needed for indexing in the next line
+	for i,sol in enumerate(swarms[sorted_index]):
+		sol*=10 # output structures tended to be very small so now they are not
+		metrics=formatMetrics(sol,distance_m)
+		base_name=outfile+str(i)
+		outputPdb(sol,base_name)
+		if i==0: #the 0th struct is best in terms of SCC and contains all run details
+			print(f"The Best Structure's (structure 0) metrics are:")
+			print(metrics)
+			outputLog(metrics,alpha,args.contact_matrix,base_name,bat_params=param_dict,runtime=final_end_time-start_time,searched_alphas=searched_alphas,structs=structs)
+		else:
+			outputLog(metrics,alpha,args.contact_matrix,base_name,bat_params=param_dict)
+
+	print(f"{outfile}[0-{structs-1+searched_alphas}].log and {outfile}[0-{structs-1+searched_alphas}].pdb written!")
 	print(f"Done in {final_end_time-start_time:.2f} seconds total")
 
-	#output results
-	print("Writing best structure....")
 
-	print(metrics)
-	
-
-	
-	outputLog(metrics,alpha,args.contact_matrix,outfile,bat_params=param_dict,runtime=final_end_time-start_time,searched_alphas=searched_alphas,structs=structs)
-	outputPdb(best_sol,outfile)
-	print(f"{outfile}.log and {outfile}.pdb written!")
 
 	
 
