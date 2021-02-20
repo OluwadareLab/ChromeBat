@@ -1,39 +1,85 @@
-# ChromeBat
-An metahueristic approach to solving the 3D Genome Reconstruction Problem
+------------------------------------------------------------------------------------------------------------------------------------
+# ChromeBat: A Nature-Inspired Approach to Genome Reconstruction
+------------------------------------------------------------------------------------------------------------------------------------
+**OluwadareLab,**
+**University of Colorado, Colorado Springs**
 
-# Usage
-Enter either command
+----------------------------------------------------------------------
+**Developed by:** <br />
+		 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Brandon Collins<br />
+		 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Department of Computer Science <br />
+		 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;University of Colorado, Colorado Springs <br />
+		 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Email: bcollin3@uccs.edu <br /><br />
+		 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Philip Brown<br />
+		 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Department of Computer Science <br />
+		 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;University of Colorado, Colorado Springs <br />
+		 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Email: pbrown2@uccs.edu 
+		 <br /><br />
+		 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Oluwatosin Oluwadare, PhD <br />
+		 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Department of Computer Science <br />
+		 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;University of Colorado, Colorado Springs <br />
+		 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Email: ooluwada@uccs.edu
 
->python ChromeBat.py contact_matrix
 
+----------------------------------------------------------------------
+
+**1.	Content of folders:**
+----------------------------------------------------------------------
+* src: Source code and parameter file for ChromeBat
+* results: output structures on GM06990 and GM12878
+
+**3.	Input matrix file format:**
+-----------------------------------------------------------
+
+Square Matrix Input format: The square matrix is a whitespace seperated N by N intra-chromosomal contact matrix derived from Hi-C data, where N is the number of equal-sized regions of a chromosome.
+
+
+**4.	Dependencies Installation:**
+-----------------------------------------------------------
+
+&nbsp;&nbsp;&nbsp;&nbsp;python - 3.8.5 <br />
+&nbsp;&nbsp;&nbsp;&nbsp;scipy - 1.5.2 <br />
+&nbsp;&nbsp;&nbsp;&nbsp;numpy - 1.19.2 <br />
+&nbsp;&nbsp;&nbsp;&nbsp;scikit-learn - 0.23.2 <br />
+
+
+**5.	Usage:**
+-----------------------------------------------------------
 >python ChromeBat.py contact_matrix parameter_file
 
-where contact_matrix is text file representing a square contact matrix derived from a HiC experiement.
+where contact_matrix is text file representing a whitespace delimited square contact matrix derived from a HiC experiement.
 If no parameter_file is passed the algorithm will use default parameters.
 
 
-# Parameters
+
+**6.	Parameters:**
+-----------------------------------------------------------
 All parameters must be specified in a text file like in the parameters.txt example.
-The parameters include
-+ ouput_file: This is the name both of the outputted files will have.
+
+Searched Parameters:
 + alpha: This is the conversion factor used to convert the contact matrix to a distance matrix. If no alpha value is found a search across alphas in [0,1] will be performed
++ perturbation: This determines the size of the random walk a bat takes after pulsing
+These parameters may have comma delimited values in the parameter files, doing so will result in a search over all combinations of possible purturbation and alpha values.
+
+Normal Parameters:
++ ouput_file: This is the name both of the outputted files will have.
 + num_bats: How many bats the algorithm will simulate.
 + generations: How many iterations the algorithm will perform.
 + min_freq: The minimuim frequency that a bat can have. Low frequency means a bat will explore more then exploit.
 + max_freq: The maximum frequency a bat will be simulated with. Bats with high frequency expoit more then explore.
 + volume: A bat's volume determines how willing it is to accept new solutions. A loud bat will accept solutions with high probability.
 + pulse: When a bat pulses it teleports to the current best known solution. High pulse means it teleports with high probability. 
-+ perturbation: This determines the size of the random walk a bat takes after pulsing
 + structs: This is how many structures in addition to the alpha search structures the algorithm should generate. If an alpha search is performed only the structures generated with the optimal alpha will be written to files.
+These parameters may only have 1 value.
 
-
-# Output
-Chromebat.py will produce two files per structure generated with desired alpha whose names are specified by the output_file parameter in the parameter file.
+**7.	Output:**
+-----------------------------------------------------------
+Chromebat.py will produce two files per structure generated whose names are specified by the output_file parameter in the parameter file.
 
 These files are
   + output_fileX.pdb : contains the model that may be visualized using PyMol
   + output_fileX.log : contains the input file name, Spearman's and Pearson's Correlation Coeffiecents and the Root Mean Squared Error
 
-  Where X indicates the a structures number. For example if structs=2 and an alpha search is performed 3 structures with the optimal alpha will be generated, and 3 pairs of .pdb,.log files will be generated.
+  Where X indicates the a structures number. For example if structs=2 and an alpha/perturbation search is performed 3 structures with the optimal alpha will be generated, and 3 pairs of .pdb,.log files will be generated.
 
 
