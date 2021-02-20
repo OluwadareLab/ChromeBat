@@ -59,6 +59,7 @@ All parameters must be specified in a text file like in the parameters.txt examp
 Searched Parameters:
 + alpha: This is the conversion factor used to convert the contact matrix to a distance matrix. If no alpha value is found a search across alphas in [0,1] will be performed
 + perturbation: This determines the size of the random walk a bat takes after pulsing
+
 These parameters may have comma delimited values in the parameter files, doing so will result in a search over all combinations of possible purturbation and alpha values.
 
 Normal Parameters:
@@ -70,6 +71,7 @@ Normal Parameters:
 + volume: A bat's volume determines how willing it is to accept new solutions. A loud bat will accept solutions with high probability.
 + pulse: When a bat pulses it teleports to the current best known solution. High pulse means it teleports with high probability. 
 + structs: This is how many structures in addition to the alpha search structures the algorithm should generate. If an alpha search is performed only the structures generated with the optimal alpha will be written to files.
+
 These parameters may only have 1 value.
 
 **7.	Output:**
