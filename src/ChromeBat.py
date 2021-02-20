@@ -13,6 +13,7 @@ import time
 from multiprocessing import Pool
 from multiprocessing import cpu_count
 from itertools import repeat
+from itertools import product
 
 #regular expressions
 comment_re=re.compile("#.*")
@@ -91,6 +92,10 @@ class Bat:
 	#this is the actual bat algorithm
 	#vectorized implementation has some redunant computation, but almost all computation time is spent in oracle calls
 	def fly(self):
+	#for the record this function is inefficent 
+	#It should be done with numpy boolean masks instead of the multiplication that is done
+
+
 		for g in range(self.generations):
 			#bat's mobility logic
 			self.freq=self.freq_min+(self.freq_max-self.freq_min)*np.random.rand(self.num_bats)
@@ -167,11 +172,12 @@ def outputPdb(input_sol,outfile=None):
 #return (contact matrix,alpha,bat algo parameters,outfile,structs)
 def processInput(input_fname,parameter_fname=None):
 	contact=np.genfromtxt(input_fname)
-	alpha=None
+	alpha=[]
+	perturbation=[]
 	structs=1
 	outfile=None
 	if parameter_fname is None:
-		return (contact,alpha,dict(),outfile,structs)
+		return (contact,alpha,perturbation,dict(),outfile,structs)
 	pfile=open(parameter_fname,"r")
 	plines=pfile.readlines()
 	param_dict=dict()
@@ -193,12 +199,23 @@ def processInput(input_fname,parameter_fname=None):
 		elif numeric_re.match(arg) is None:
 			raise ValueError(f"{arg} must be numeric")
 		elif param=="alpha":
-			alpha=float(arg)
+			alpha=intrepretCommaSeperated(arg)
+		elif param=="perturbation":
+			perturbation=intrepretCommaSeperated(arg)
 		else:
 			param_dict[param]=float(arg)
 
 	# distance_matrix=contactToDistance(contact,alpha)
-	return (contact,alpha,param_dict,outfile,structs)
+	return (contact,alpha,perturbation,param_dict,outfile,structs)
+
+#accepts string with comma seperated values
+#returns list of floats
+#None if no float 
+def intrepretCommaSeperated(string:str):
+	vals=string.split(",")
+	vals=[v for v in vals if v] #gets rid of empty strings - note the empty string uniquely evaluates as false
+	return list(map(float,vals))
+
 
 #accepts the proposed solution and the target distance matrix
 #returns a string with PCC,SCC,RMSE
@@ -245,6 +262,7 @@ def outputLog(metrics,alpha,input_fname,out_fname=None,bat_params=None,runtime=N
 
 #simple function for multiprocessing
 def optimize(distance,params):
+	np.random.seed(int(time.time()*100000000)%3200000000) #This is a nasty hack so linux will have differnt random seeds, else all structures produced are identical
 	bats=Bat(distance,**params)
 	return bats.fly()
 
@@ -256,11 +274,11 @@ if __name__=="__main__":
 	#command line/input processing
 	start_time=time.time()
 	parser=argparse.ArgumentParser()
-	parser.add_argument("contact_matrix",help="File name of a square contact matrix")
-	parser.add_argument("params",nargs="?",default=None,help="File name of the parameters file")
+	parser.add_argument("contact_matrix",help="File name of a white space delimited square contact matrix")
+	parser.add_argument("params",help="File name of the parameters file")
 	# parser.add_argument("parameters",default="parameters.txt",)	
 	args=parser.parse_args()
-	contact,alpha,param_dict,outfile,structs=processInput(args.contact_matrix,args.params)
+	contact,alphas,perturbations,param_dict,outfile,structs=processInput(args.contact_matrix,args.params)
 
 	print("Running ChromeBat")
 
@@ -268,33 +286,61 @@ if __name__=="__main__":
 	#sets alpha to best alpha found
 	PROC_COUNT=cpu_count()
 	searched_alphas=False
-	if alpha is None:
-		print("Performing Alpha Search...")
+
+	if len(alphas) == 0:
+		print("No Alpha values found... using alpha=[0.1,0.3,0.5,0.7,0.9,1]")
+		alphas=[0.1,0.3,0.5,0.7,0.9,1]
+	elif len(alphas)==1:
+		alpha=alphas[0]
+
+	if len(perturbations) == 0:
+		print("No Perturbation Value found... using perturbation=[0.002,0.004,0.006,0.008,0.01]")
+		perturbations=[0.002,0.004,0.006,0.008,0.01]
+	elif len(alphas)==1:
+		perturbation=perturbations[0]
+
+	if len(alphas)*len(perturbations)>1:
+		print(f"There are {len(alphas)*len(perturbations)} combinations of alpha and perturbation values")
+		print(f"Performing Alpha/Perturbation Search...(this will open {len(alphas)*len(perturbations)} processes)")
 
 		#multiprocessing to search the alpha values
 		searched_alphas=True
-		alphas=[0.1,0.3,0.5,0.7,0.9,1]
-		distance_m_list=[adjancenyPreprocess(contactToDistance(contact,a)) for a in alphas]
+		alpha_perturbations=list(product(alphas,perturbations))
+		distance_m_list=[adjancenyPreprocess(contactToDistance(contact,a)) for a,p in alpha_perturbations]
+		param_dict_list=[param_dict.copy() for i in range(len(alpha_perturbations))]
+		for i in range(len(alpha_perturbations)):
+			a,p=alpha_perturbations[i]
+			param_dict_list[i]["perturbation"]=p
+		
+		# distance_m_list=[adjancenyPreprocess(contactToDistance(contact,a)) for a in alphas]
+		# param_dict_list=[param]
+
 		pool = Pool(processes=PROC_COUNT)
-		swarms=pool.starmap(optimize, zip(distance_m_list,repeat(param_dict)))
+		swarms=pool.starmap(optimize, zip(distance_m_list,param_dict_list))
 		pool.close()
 		pool.join()
 
 		#metrics computations and alpha selection
 		spearmans=[formatMetrics(sol,distance_m_list[i],string=False)[1] for i,sol in enumerate(swarms)]
 		best_index=np.argmax(spearmans)
-		alpha=alphas[best_index]
+		alpha,perturbation=alpha_perturbations[best_index]
 		searched_sol=swarms[best_index]
 		end_alphas_time=time.time()
-		pad_len=len(str(max(alphas,key=lambda x:len(str(x)))))+7
-		alpha_scc_string="\n".join([pad(alphas[i],pad_len,left=False)+str(spearmans[i]) for i in range(len(spearmans))])
-		print("Search Results:\n"+pad("alpha",pad_len)+"SCC\n"+alpha_scc_string)
-		print(f"Best Alpha={alpha}, found in {end_alphas_time-start_time:.2f} seconds")
+		# pad_len=len(str(max(alphas,key=lambda x:len(str(x)))))+7
+		# alpha_scc_string="\n".join([pad(alphas[i],pad_len,left=False)+str(spearmans[i]) for i in range(len(spearmans))])
+		# print("Search Results:\n"+pad("alpha",pad_len)+"SCC\n"+alpha_scc_string)
+
+		print("Search results in format (alpha,perturbation): SCC")
+		for i in range(len(alpha_perturbations)):
+			a,p=alpha_perturbations[i]
+			print(f"({a},{p}): {spearmans[i]}")
+		print(f"Best Alpha={alpha},perturbation={perturbation} found in {end_alphas_time-start_time:.2f} seconds")
 
 	#geneterates structs structures 
 	distance_m=contactToDistance(contact,alpha)
+	param_dict["perturbation"]=perturbation
 	if structs>0: 
-		print(f"Generating {structs} more structures using Alpha={alpha}")
+		print(f"Generating {structs} more structures using alpha={alpha}, perturbation={perturbation}")
 		distance_m_prepro=adjancenyPreprocess(distance_m)
 		pool = Pool(processes=PROC_COUNT)
 		swarms=pool.starmap(optimize, zip(repeat(distance_m_prepro,structs),repeat(param_dict)))
