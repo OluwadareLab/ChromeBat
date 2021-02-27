@@ -1,0 +1,15 @@
+Input file: asd
+Convert factor: 0.5
+AVG RMSE: 2.8660460543186814
+AVG Spearman correlation Dist vs. Reconstructed Dist: 0.8881858790413245
+AVG Pearson correlation Dist vs. Reconstructed Dist: 0.8309766898108186
+Runtime: 371.45 seconds
+Performed Alpha Search: True
+Generated Stuctures Count: 10
+num_bats=10.0
+generations=10000.0
+min_freq=0.0
+max_freq=0.1
+volume=0.9
+pulse=0.9
+perturbation=0.002

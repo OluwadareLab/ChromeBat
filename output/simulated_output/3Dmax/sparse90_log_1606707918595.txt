@@ -1,7 +1,0 @@
-Input file: Simulation/data/sparse/sparse90.txt
-Convert factor: 0.6
-Learning rate: 1.0
-RMSE: 119.34035167450168
-Spearman correlation IFs vs. Reconstructed Dist: -0.7170633662557659
-Spearman correlation WishDist vs. Reconstructed Dist: 0.7170633662557655
-Pearson correlation WishDist vs. Reconstructed Dist: 0.648431046680132

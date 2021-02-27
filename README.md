@@ -55,22 +55,23 @@ If no parameter_file is passed the algorithm will use default parameters.
 **6.	Parameters:**
 -----------------------------------------------------------
 All parameters must be specified in a text file like in the parameters.txt example.
+Default values are given in [].
 
 Searched Parameters:
-+ alpha: This is the conversion factor used to convert the contact matrix to a distance matrix. If no alpha value is found a search across alphas in [0,1] will be performed
-+ perturbation: This determines the size of the random walk a bat takes after pulsing
++ alpha: [0.1,0.3,0.5,0.7,0.9,1.0] This is the conversion factor used to convert the contact matrix to a distance matrix. If no alpha value is found a search across alphas in [0,1] will be performed
++ perturbation: [0.002,0.004,0.006,0.008,0.01] This determines the size of the random walk a bat takes after pulsing
 
-These parameters may have comma delimited values in the parameter files, doing so will result in a search over all combinations of possible purturbation and alpha values.
+These parameters may have comma delimited values in the parameter file, doing so will result in a search over all combinations of possible purturbation and alpha values.
 
 Normal Parameters:
-+ ouput_file: This is the name both of the outputted files will have.
-+ num_bats: How many bats the algorithm will simulate.
-+ generations: How many iterations the algorithm will perform.
-+ min_freq: The minimuim frequency that a bat can have. Low frequency means a bat will explore more then exploit.
-+ max_freq: The maximum frequency a bat will be simulated with. Bats with high frequency expoit more then explore.
-+ volume: A bat's volume determines how willing it is to accept new solutions. A loud bat will accept solutions with high probability.
-+ pulse: When a bat pulses it teleports to the current best known solution. High pulse means it teleports with high probability. 
-+ structs: This is how many structures in addition to the alpha search structures the algorithm should generate. If an alpha search is performed only the structures generated with the optimal alpha will be written to files.
++ ouput_file: [bat] This is the name both of the outputted files will have.
++ num_bats: [10] How many bats the algorithm will simulate.
++ generations: [10] How many iterations the algorithm will perform.
++ min_freq: [0] The minimuim frequency that a bat can have. Low frequency means a bat will explore more then exploit.
++ max_freq: [0.1] The maximum frequency a bat will be simulated with. Bats with high frequency expoit more then explore.
++ volume: [0.9] A bat's volume determines how willing it is to accept new solutions. A loud bat will accept solutions with high probability.
++ pulse: [0.9] When a bat pulses it teleports to the current best known solution. High pulse means it teleports with high probability. 
++ structs: [10] This is how many structures in addition to the alpha search structures the algorithm should generate. If an alpha search is performed only the structures generated with the optimal alpha will be written to files.
 
 These parameters may only have 1 value.
 
@@ -82,6 +83,6 @@ These files are
   + output_fileX.pdb : contains the model that may be visualized using PyMol
   + output_fileX.log : contains the input file name, Spearman's and Pearson's Correlation Coeffiecents and the Root Mean Squared Error
 
-  Where X indicates the a structures number. For example if structs=2 and an alpha/perturbation search is performed 3 structures with the optimal alpha will be generated, and 3 pairs of .pdb,.log files will be generated.
+  Where X indicates the a structures number. For example if structs=2 and an alpha/perturbation search is performed 3 structures with the optimal alpha/perturbation will be generated, and 3 pairs of .pdb,.log files will be generated.
 
 
