@@ -1,5 +1,5 @@
 ------------------------------------------------------------------------------------------------------------------------------------
-# ChromeBat: A Nature-Inspired Approach to Genome Reconstruction
+# ChromeBat: A Bio-Inspired Approach to Genome Reconstruction
 ------------------------------------------------------------------------------------------------------------------------------------
 **OluwadareLab,**
 **University of Colorado, Colorado Springs**
