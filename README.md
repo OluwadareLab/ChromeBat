@@ -48,14 +48,16 @@ Square Matrix Input format: The square matrix is a whitespace seperated N by N i
 >python ChromeBat.py contact_matrix parameter_file
 
 where contact_matrix is text file representing a whitespace delimited square contact matrix derived from a HiC experiement.
-If no parameter_file is passed the algorithm will use default parameters.
+
 
 
 
 **6.	Parameters:**
 -----------------------------------------------------------
-All parameters must be specified in a text file like in the parameters.txt example.
-Default values are given in [].
+All parameters must be specified in a text file like in the parameters_heavy.txt example.
+Default values of parameters_heavy.txt are given in [].
+However, during the parameter search phase of the algoirthm the heavy parameter file will run 30 processes concurrently.
+Because this is impractical to run on most local machines we also provide a parameters_light.txt file that will run only 6 processes concurrently.
 
 Searched Parameters:
 + alpha: [0.1,0.3,0.5,0.7,0.9,1.0] This is the conversion factor used to convert the contact matrix to a distance matrix. If no alpha value is found a search across alphas in [0,1] will be performed
