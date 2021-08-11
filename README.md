@@ -84,6 +84,7 @@ Chromebat.py will produce two files per structure generated whose names are spec
 These files are
   + output_fileX.pdb : contains the model that may be visualized using PyMol
   + output_fileX.log : contains the input file name, Spearman's and Pearson's Correlation Coeffiecents and the Root Mean Squared Error
+  + output_filecoordinate_mapping.txt : contains the mapping of old loci indices present in the original data to the new indices used after preprocessing (row column pairs that were all zero are removed as a preprocessing step)
 
   Where X indicates the a structures number. For example if structs=2 and an alpha/perturbation search is performed 3 structures with the optimal alpha/perturbation will be generated, and 3 pairs of .pdb,.log files will be generated.
 
