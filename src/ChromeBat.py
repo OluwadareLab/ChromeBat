@@ -22,19 +22,19 @@ numeric_re=re.compile('\d+(\.\d+)?')
 #accepts a canidate solution(xyz coordinates of all loci) can be have shape (3n,) or (n,3)
 #returns the distance matrix between all of said loci
 def sol2distVec(sol):
-    #Ensuring xyz_col to have shape (n,3)
-    if len(np.shape(sol))==1:
-        xyz_col=np.array(np.split(sol,len(sol)/3))
-    else:
-        xyz_col=sol
-    n=len(xyz_col)
-    #we construct rows_m,cols_m to have shape (n,n,3)
-    #
-    rows=np.reshape(xyz_col,(n,1,3))
-    rows_m=np.tile(rows,(1,n,1))
-    cols=np.reshape(xyz_col,(1,n,3))
-    cols_m=np.tile(cols,(n,1,1))
-    return np.sum((cols_m-rows_m)**2,2)**0.5
+	#Ensuring xyz_col to have shape (n,3)
+	if len(np.shape(sol))==1:
+		xyz_col=np.array(np.split(sol,len(sol)/3))
+	else:
+		xyz_col=sol
+	n=len(xyz_col)
+	#we construct rows_m,cols_m to have shape (n,n,3)
+	#
+	rows=np.reshape(xyz_col,(n,1,3))
+	rows_m=np.tile(rows,(1,n,1))
+	cols=np.reshape(xyz_col,(1,n,3))
+	cols_m=np.tile(cols,(n,1,1))
+	return np.sum((cols_m-rows_m)**2,2)**0.5
 
 #accepts contact matrix and scaling parameter alpha
 #returns the distance matrix
@@ -119,6 +119,22 @@ class Bat:
 			self.fitness=(self.fitness*self.declined_sols)+(self.temp_fitness*self.accepted_sols)
 			self.evalBats()
 		return self.best_sol
+
+#accepts square (contact) matrix
+#returns tuple of form (new_matrix,index_dict) such that
+#	new_matrix is a square (contact) matrix where any all zero row/column pair with the same index is removed
+#	index_dict is a dictionary where keys are indexes in the the old matrix mapping to their position in the new matrix
+#		if an old index is missing in the keys then that row/col has been removed in new_matrix 
+def removeZeroRowCol(matrix):
+	cols_nonzero=np.where(~np.all(np.isclose(matrix,0),axis=0))[0]#finds nonzero cols
+	rows_nonzero=np.where(~np.all(np.isclose(matrix,0),axis=1))[0]#finds nonzero rows
+	rowcol_nonzero=list(set(cols_nonzero)|set(rows_nonzero))#finds nonzero rol/col pairs
+	rowcol_nonzero=np.sort(rowcol_nonzero)
+	if len(rowcol_nonzero)==0:
+		raise ValueError("Input Matrix is all zero...")
+	new_matrix=matrix[rowcol_nonzero[:,np.newaxis],rowcol_nonzero]#removes zero row/cols
+	index_dict={old:new for new,old in enumerate(rowcol_nonzero)}#build old to new index dictionary
+	return (new_matrix,index_dict)
 
 
 #accepts symmetric square matrix a
@@ -259,6 +275,18 @@ def outputLog(metrics,alpha,input_fname,out_fname=None,bat_params=None,runtime=N
 	f=open(out_fname,"w")
 	f.write(outstring)
 	f.close()
+#prints the coordinate mapping to file
+def outputCoordinateMap(index_dict,out_fname):
+	if out_fname is None:
+		out_fname="bat_coordinate_mapping.txt"
+	else:
+		out_fname+="coordinate_mapping.txt"
+	outstring=""
+	for key in index_dict:
+		outstring+=f"{key}\t{index_dict[key]}\n"
+	f=open(out_fname,"w")
+	f.write(outstring)
+	f.close()
 
 #simple function for multiprocessing
 def optimize(distance,params):
@@ -281,6 +309,8 @@ if __name__=="__main__":
 	contact,alphas,perturbations,param_dict,outfile,structs=processInput(args.contact_matrix,args.params)
 
 	print("Running ChromeBat")
+
+	contact,index_dict=removeZeroRowCol(contact)#preprocesses away all zero row/col pairs
 
 	#perform alpha search if no alpha found in the parameter file
 	#sets alpha to best alpha found
@@ -372,6 +402,7 @@ if __name__=="__main__":
 			print(f"The Best Structure's (structure 0) metrics are:")
 			print(metrics)
 			outputLog(metrics,alpha,args.contact_matrix,base_name,bat_params=param_dict,runtime=final_end_time-start_time,searched_alphas=searched_alphas,structs=structs)
+			outputCoordinateMap(index_dict,base_name)
 		else:
 			outputLog(metrics,alpha,args.contact_matrix,base_name,bat_params=param_dict)
 
