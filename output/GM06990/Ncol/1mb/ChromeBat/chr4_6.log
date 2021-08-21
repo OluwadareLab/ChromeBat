@@ -1,0 +1,12 @@
+Input file: data/nCol/1mb/chr4_ICE_matrix_clean.txt
+Convert factor: 0.7
+AVG RMSE: 3.2500357738594556
+AVG Spearman correlation Dist vs. Reconstructed Dist: 0.8582174962087716
+AVG Pearson correlation Dist vs. Reconstructed Dist: 0.7551183986792721
+num_bats=10.0
+generations=10000.0
+min_freq=0.0
+max_freq=0.1
+volume=0.9
+pulse=0.9
+perturbation=0.004

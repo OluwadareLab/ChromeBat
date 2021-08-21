@@ -1,0 +1,15 @@
+Input file: data/nCol/500kb/chr20_ICE_matrix_clean.txt
+Convert factor: 0.5
+AVG RMSE: 3.3828337010718483
+AVG Spearman correlation Dist vs. Reconstructed Dist: 0.854669268160971
+AVG Pearson correlation Dist vs. Reconstructed Dist: 0.7920070247931732
+Runtime: 671.04 seconds
+Performed Alpha Search: True
+Generated Stuctures Count: 10
+num_bats=10.0
+generations=10000.0
+min_freq=0.0
+max_freq=0.1
+volume=0.9
+pulse=0.9
+perturbation=0.004

@@ -1,0 +1,6 @@
+Input file: /Users/oluwatosinoluwadare/OneDrive/Documents/UCCS/Research/Projects/Benchmarking/ICE_matrix_clean_list/chr18_ICE_matrix_clean.txt
+Convert factor: 0.9999999999999999
+Learning rate: 1.0
+RMSE: 87.99279859028526
+Spearman correlation IFs vs. Reconstructed Dist: -0.8175628742102877
+Spearman correlation Expected Dist vs. Reconstructed Dist: 0.8175628742102875
