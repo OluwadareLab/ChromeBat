@@ -145,7 +145,7 @@ def adjancenyPreprocess(a):
 	mean_adj=sum(adj_diagonal)/len(adj_diagonal[adj_diagonal != 0]) #mean of all values on off diagonal not including 0s
 	adj_diagonal[adj_diagonal == 0] = mean_adj #this is corrected off diagonal
 	a.flat[1::len(a)+1]=adj_diagonal #this fixes the diagonal to the right of the main diagonal
-	a.flat[len(a)::len(a)+1]==adj_diagonal #this fixes the diagonal to the left of the main diagonal
+	a.flat[len(a)::len(a)+1]=adj_diagonal #this fixes the diagonal to the left of the main diagonal
 	return a
 
 #used for making the pdb files
